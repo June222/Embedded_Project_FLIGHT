@@ -566,3 +566,60 @@ static void AppTask_Rolling(void* p_arg)
     }
 
 }
+
+/*
+*********************************************************************************************************
+*                                          Setup_Gpio()
+*
+* Description : Configure LED GPIOs directly
+*
+* Argument(s) : none
+*
+* Return(s)   : none
+*
+* Caller(s)   : AppTaskStart()
+*
+* Note(s)     :
+*              LED1 PB0
+*              LED2 PB7
+*              LED3 PB14
+*
+*********************************************************************************************************
+*/
+static void Setup_Gpio(void)
+{
+    GPIO_InitTypeDef led_init = { 0 };
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+    RCC_AHB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    led_init.GPIO_Mode = GPIO_Mode_OUT;
+    led_init.GPIO_OType = GPIO_OType_PP;
+    led_init.GPIO_Speed = GPIO_Speed_2MHz;
+    led_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    led_init.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_7 | GPIO_Pin_14;
+
+    GPIO_Init(GPIOB, &led_init);
+}
+
+
+/*
+*********************************************************************************************************
+*                                          AppObjCreate()
+*
+* Description : Create application kernel objects tasks.
+*
+* Argument(s) : none
+*
+* Return(s)   : none
+*
+* Caller(s)   : AppTaskStart()
+*
+* Note(s)     : none.
+*********************************************************************************************************
+*/
+
+static  void  AppObjCreate(void)
+{
+
+}
