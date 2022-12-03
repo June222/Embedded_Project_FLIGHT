@@ -89,3 +89,28 @@ typedef enum {
 
     CLOCK_WISE_N
 }clock_wise;
+
+/*
+*********************************************************************************************************
+*                                         FUNCTION PROTOTYPES
+*********************************************************************************************************
+*/
+
+static  void  AppTaskStart(void* p_arg);
+static  void  AppTaskCreate(void);
+static  void  AppObjCreate(void);
+
+// Motor Task
+static void AppTask_Rolling(void* p_arg);
+static void AppTask_Yawing(void* p_arg);
+static void AppTask_Pitching(void* p_arg);
+
+// LED Task
+static void AppTask_LED(void* p_arg);
+
+// USART Task
+static void AppTask_USART(void* p_arg);
+
+// Setup GPIO Port
+static void Setup_Gpio(void);
+
