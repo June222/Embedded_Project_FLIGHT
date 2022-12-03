@@ -225,3 +225,44 @@ int main(void)
     (void)&err;
     return (0u);
 }
+
+
+/*
+*********************************************************************************************************
+*                                          STARTUP TASK
+*
+* Description : This is an example of a startup task.  As mentioned in the book's text, you MUST
+*               initialize the ticker only once multitasking has started.
+*
+* Arguments   : p_arg   is the argument passed to 'AppTaskStart()' by 'OSTaskCreate()'.
+*
+* Returns     : none
+*
+* Notes       : 1) The first line of code is used to prevent a compiler warning because 'p_arg' is not
+*                  used.  The compiler should not generate any code for this statement.
+*********************************************************************************************************
+*/
+static  void  AppTaskStart(void* p_arg)
+{
+    OS_ERR  err;
+
+    (void)p_arg;
+
+    BSP_Init();                                                 /* Initialize BSP functions                             */
+    BSP_Tick_Init();                                            /* Initialize Tick Services.                            */
+
+#if OS_CFG_STAT_TASK_EN > 0u
+    OSStatTaskCPUUsageInit(&err);                               /* Compute CPU capacity with no task running            */
+#endif
+
+#ifdef CPU_CFG_INT_DIS_MEAS_EN
+    CPU_IntDisMeasMaxCurReset();
+#endif
+
+    APP_TRACE_DBG(("Creating Application Kernel Objects\n\r"));
+    AppObjCreate();                                             /* Create Applicaiton kernel objects                    */
+
+    APP_TRACE_DBG(("Creating Application Tasks\n\r"));
+    AppTaskCreate();                                            /* Create Application tasks                             */
+}
+
