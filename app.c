@@ -310,3 +310,184 @@ static  void  AppTaskCreate(void)
     }
 }
 
+
+
+/*
+*********************************************************************************************************
+*                                          AppTask_USART
+*
+* Description : USART Control function
+*
+* Arguments   : p_arg (unused)
+*
+* Returns     : none
+
+*********************************************************************************************************
+*/
+
+static void AppTask_USART(void* p_arg)
+{
+    OS_ERR  err;
+    uint16_t c;
+
+    char command[20] = "";
+    task_cmd task_command;
+
+    led_c led_cmd;
+
+    //unsigned short b_time = 1u;
+    int i = 0;
+
+    // flag variables to indicate the status of each type
+    int led_flag = 0;
+    int motor_flag = 0;
+    int critical_flag = 0;
+    int flight_dir_flag = 0;
+    int reset_flag = 0;
+    int blink_flag = 0;
+
+    while (DEF_TRUE) {
+        i = 0;
+        motor_flag = 0;
+        critical_flag = 0;
+        flight_dir_flag = 0;
+        led_flag = 0;
+        reset_flag = 0;
+        blink_flag = 0;
+        c = 0;
+
+        CPU_SR_ALLOC();
+
+        // Part that receives command input through putty
+        while (DEF_TRUE) {
+            while (USART_GetFlagStatus(Nucleo_COM1, USART_FLAG_RXNE) == RESET) {
+                OSTimeDlyHMSM(0u, 0u, 0u, 10u, OS_OPT_TIME_HMSM_STRICT, &err);
+            }
+            c = USART_ReceiveData(Nucleo_COM1);
+
+            if (c == '\r') {
+                break;
+            }
+            else if ((c == 127) && (i > 0)) {
+                USART_SendData(Nucleo_COM1, 127);
+                --i;
+                command[i] = '\0';
+
+            }
+            else {
+                USART_SendData(Nucleo_COM1, c);
+                command[i++] = c;
+            }
+        }
+
+        command[i] = '\0';
+
+        // The part that goes to the next line in the serial terminal
+        if (i) {
+            send_string("\n\r");
+        }
+
+        USART_ClearITPendingBit(USART3, USART_IT_RXNE);
+
+        // Check the LED number in the received command.
+        if (strstr(command, "rolling") != NULL) {
+            task_command.cmd = MOTOR;
+            task_command.m_name = ROLLING;
+            motor_flag = 1;
+            critical_flag = 1;
+        }
+        else if (strstr(command, "yawing") != NULL) {
+            task_command.cmd = MOTOR;
+            task_command.m_name = YAWING;
+            motor_flag = 1;
+            critical_flag = 1;
+        }
+        else if (strstr(command, "pitching") != NULL) {
+            task_command.cmd = MOTOR;
+            task_command.m_name = PITCHING;
+            motor_flag = 1;
+            critical_flag = 1;
+        }
+        else {}
+
+        if (strstr(command, "ledoff") != NULL) {
+            task_command.cmd = LED;
+            task_command.l_cmd = OFF;
+            led_flag = 1;
+            reset_flag = 1;
+            critical_flag = 1;
+        }
+        else if (strstr(command, "ledblink") != NULL) {
+            task_command.cmd = LED;
+            task_command.l_cmd = BLINK;
+            led_flag = 1;
+            blink_flag = 1;
+            critical_flag = 1;
+        }
+        else {}
+
+        // Check the LED command to be executed among the received commands.
+        // In the case of blink and reset, separate flags are created to perform the operation.
+        if (strstr(command, "up") != NULL) {
+            task_command.f_dir = UP;
+            flight_dir_flag = 1;
+            critical_flag = 1;
+        }
+        else if (strstr(command, "down") != NULL) {
+            task_command.f_dir = DOWN;
+            flight_dir_flag = 1;
+            critical_flag = 1;
+        }
+        else if (strstr(command, "left") != NULL) {
+            task_command.f_dir = LEFT;
+            flight_dir_flag = 1;
+            critical_flag = 1;
+        }
+        else if (strstr(command, "right") != NULL) {
+            task_command.f_dir = RIGHT;
+            flight_dir_flag = 1;
+            critical_flag = 1;
+        }
+        else {}
+
+        if (motor_flag && critical_flag) {
+            // Enter critical section
+            OS_CRITICAL_ENTER();
+
+            // set direction of flight
+            if (flight_dir_flag) {
+                motor_task_arr[task_command.m_name].cmd = task_command.cmd;
+                motor_task_arr[task_command.m_name].f_dir = task_command.f_dir;
+            }
+
+            // critical section escape
+            OS_CRITICAL_EXIT();
+        }
+
+        if (led_flag && critical_flag) {
+            // Enter critical section
+            OS_CRITICAL_ENTER();
+
+            if (blink_flag) {
+                led_task_arr.cmd = LED;
+                led_task_arr.l_cmd = BLINK;
+            }
+            else if (reset_flag) {
+                led_task_arr.cmd = LED;
+                led_task_arr.l_cmd = OFF;
+            }
+            else {}
+
+            // critical section escape
+            OS_CRITICAL_EXIT();
+        }
+
+        // command reset
+        memset(command, '\0', 20 * sizeof(char));
+
+        // Time delay
+        OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &err);
+
+
+    }
+}
