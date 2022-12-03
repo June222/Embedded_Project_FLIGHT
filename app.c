@@ -491,3 +491,78 @@ static void AppTask_USART(void* p_arg)
 
     }
 }
+
+/*
+*********************************************************************************************************
+*                                          AppTask_LED
+*
+* Description : LED Control function
+*
+* Arguments   : p_arg (unused)
+*
+* Returns     : none
+
+*********************************************************************************************************
+*/
+static void AppTask_LED(void* p_arg)
+{
+    OS_ERR  err;
+
+    // LED operation appears differently depending on the command state of the LED.
+    // In the case of Blink, blink is performed by the input time unit.
+    while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
+        switch (led_arr[LED1].c) {
+        case ON:
+            BSP_LED_On(1);
+            OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &err);
+            break;
+        case OFF:
+            BSP_LED_Off(1);
+            OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &err);
+            break;
+        case BLINK:
+            BSP_LED_Toggle(1);
+            OSTimeDlyHMSM(0u, 0u, led_arr[LED1].t, 0u, OS_OPT_TIME_HMSM_STRICT, &err);
+            break;
+        }
+
+    }
+}
+
+
+/*
+*********************************************************************************************************
+*                                          AppTask_Rolling
+*
+* Description : Rolling Motor Control function
+*
+* Arguments   : p_arg (unused)
+*
+* Returns     : none
+
+*********************************************************************************************************
+*/
+static void AppTask_Rolling(void* p_arg)
+{
+    OS_ERR  err;
+
+    // LED operation appears differently depending on the command state of the LED.
+    // In the case of Blink, blink is performed by the input time unit.
+    while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
+        switch (led_arr[LED1].c) {
+        case ON:
+            BSP_LED_On(1);
+            OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &err);
+            break;
+        case OFF:
+            BSP_LED_Off(1);
+            OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &err);
+            break;
+        case BLINK:
+            BSP_LED_Toggle(1);
+            OSTimeDlyHMSM(0u, 0u, led_arr[LED1].t, 0u, OS_OPT_TIME_HMSM_STRICT, &err);
+            break;
+        }
+    }
+
+}
