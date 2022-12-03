@@ -266,3 +266,47 @@ static  void  AppTaskStart(void* p_arg)
     AppTaskCreate();                                            /* Create Application tasks                             */
 }
 
+/*
+*********************************************************************************************************
+*                                          AppTaskCreate()
+*
+* Description : Create application tasks.
+*
+* Argument(s) : none
+*
+* Return(s)   : none
+*
+* Caller(s)   : AppTaskStart()
+*
+* Note(s)     : none.
+*********************************************************************************************************
+*/
+
+static  void  AppTaskCreate(void)
+{
+    OS_ERR err;
+
+    u8_t idx = 0;
+    task_t* pTask_Cfg;
+    for (idx = 0; idx < TASK_N; idx++)
+    {
+        pTask_Cfg = &cyclic_tasks[idx];
+
+        OSTaskCreate(
+            pTask_Cfg->pTcb,
+            pTask_Cfg->name,
+            pTask_Cfg->func,
+            (void*)0u,
+            pTask_Cfg->prio,
+            pTask_Cfg->pStack,
+            pTask_Cfg->pStack[APP_CFG_TASK_START_STK_SIZE / 10u],
+            APP_CFG_TASK_START_STK_SIZE,
+            (OS_MSG_QTY)0u,
+            (OS_TICK)0u,
+            (void*)0u,
+            (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+            (OS_ERR*)&err
+        );
+    }
+}
+
